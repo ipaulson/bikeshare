@@ -1,24 +1,23 @@
-## TODO: import all necessary packages and functions
 import csv, time, datetime
 from collections import Counter
+import itertools
 
 ## Filenames
 chicago = 'chicago.csv'
 new_york_city = 'new_york_city.csv'
 washington = 'washington.csv'
 
-
+'''
+Function: get_city()
+    Asks the user for a city and returns the filename for that city's bike share data.
+Args:
+    none.
+Returns:
+    (str) Filename for a city's bikeshare data.
+'''
 def get_city():
-    '''Asks the user for a city and returns the filename for that city's bike share data.
-
-    Args:
-        none.
-    Returns:
-        (str) Filename for a city's bikeshare data.
-    '''
     city = input('\nHello! Let\'s explore some US bikeshare data!\n'
                  'Would you like to see data for Chicago, New York, or Washington?\n')
-    # TODO: handle raw input and complete function
     city = city.strip().lower()
 
     valid_cities = ['chicago','new york', 'washington']
@@ -34,18 +33,17 @@ def get_city():
     elif city == 'washington':
         return washington
 
+'''
+Function: get_time_period()
+    Asks the user for a time period and returns the specified filter.
+Args:
+    none.
+Returns:
+    (str) month, day, or none for time_period filter.
+'''
 def get_time_period():
-    '''Asks the user for a time period and returns the specified filter.
-
-    Args:
-        none.
-    Returns:
-        TODO: fill out return type and description (see get_city for an example)
-        (str) month, day, or none for time_period filter.
-    '''
     time_period = input('\nWould you like to filter the data by month, day, or not at'
                         ' all? Type "none" for no time filter.\n')
-    # TODO: handle raw input and complete function
     time_period = time_period.strip().lower()
     
     valid_time_periods = ['month','day','none']
@@ -57,18 +55,16 @@ def get_time_period():
 
     return time_period
 
-
+'''
+Function: get_month()
+    Asks the user for a month and returns the specified month.
+Args:
+    none.
+Returns:
+    (str) month
+'''
 def get_month():
-    '''Asks the user for a month and returns the specified month.
-
-    Args:
-        none.
-    Returns:
-        TODO: fill out return type and description (see get_city for an example)
-        (str) month
-    '''
     month = input('\nWhich month? January, February, March, April, May, or June?\n')
-    # TODO: handle raw input and complete function
     month = month.strip().lower()
 
     valid_months = ['january','february','march','april','may','june']
@@ -79,33 +75,49 @@ def get_month():
 
     return month
 
+'''
+Function: get_day()
+    Asks the user for a day and returns the specified day.
+Args:
+    (str) month.
+Returns:
+    (int) day of the month
+'''
 def get_day(month):
-    '''Asks the user for a day and returns the specified day.
-
-    Args:
-        none.
-    Returns:
-        TODO: fill out return type and description (see get_city for an example)
-    '''
     while True:
         try:
             day = int(input('\nWhich day? Please type your response as an integer.\n'))
-    # TODO: handle raw input and complete function
         except ValueError:
-            print('\nI don\'t know what that is.')
+            print('\nI don\'t know what that is. Try an int.')
+            continue 
+        if day < 1:
+            print("That date is too low.")
+            continue
+        elif month == 'february' and day > 28:
+            print("That date is too high.")
+            continue
+        elif (month == 'april' or month == 'june') and day > 30:
+            print("That date is too high.")
+            continue
+        elif day > 31:
+            print("That date is too high.")
             continue
         else: 
             break
 
     return day
 
-    ## day of month? 
-
-def popular_month(city_file, time_period):
-    '''TODO: fill out docstring with description, arguments, and return values.
-    Question: What is the most popular month for start time?
-    '''
-    # TODO: complete function
+'''
+Question:
+    What is the most popular month for start time?
+Function    
+    Takes a city and returns the most popular month
+Args:
+    city_file
+Returns:
+    (str) most popular_month
+'''
+def popular_month(city_file):
     with open(city_file, newline='') as csvfile:
         reader = csv.DictReader(csvfile)
         months = []
@@ -130,7 +142,7 @@ def popular_month(city_file, time_period):
     if popular_month == '06':
         return 'June'
 
-def popular_day(city_file, time_period):
+def popular_day(city_file, month):
     '''TODO: fill out docstring with description, arguments, and return values.
     Question: What is the most popular day of week (Monday, Tuesday, etc.) for start time?
     '''
@@ -198,15 +210,15 @@ def trip_duration(city_file, time_period):
     Question: What is the total trip duration and average trip duration?
     '''
     # TODO: complete function
-    with open('chicago.csv', newline='') as csvfile:
+    with open(city_file, newline='') as csvfile:
         reader = csv.DictReader(csvfile)
-        totaL_duration = 0
+        total_duration = 0
         rows = 0
         for row in reader:
-            totaL_duration += int(row['Trip Duration'])
+            total_duration += int(row['Trip Duration'])
             rows += 1
 
-    return (totaL_duration, totaL_duration/rows)
+    return (total_duration, total_duration/rows)
 
 def popular_stations(city_file, time_period):
     '''TODO: fill out docstring with description, arguments, and return values.
@@ -227,7 +239,7 @@ def popular_stations(city_file, time_period):
     popular_start = start_count.most_common(1)[0][0]
     popular_end = end_count.most_common(1)[0][0]
 
-    return(popular_start,popular_end)
+    return(popular_start, popular_end)
 
 
 
@@ -236,13 +248,33 @@ def popular_trip(city_file, time_period):
     Question: What is the most popular trip?
     '''
     # TODO: complete function
+    with open(city_file, newline='') as csvfile:
+        reader = csv.DictReader(csvfile)
+        trip = []
+        for row in reader:
+            trip.append(tuple([row['Start Station'],row['End Station']]))
 
+    count = Counter(trip)
+    popular_trip = count.most_common(1)[0][0]
+
+    return(popular_trip)		
 
 def users(city_file, time_period):
     '''TODO: fill out docstring with description, arguments, and return values.
     Question: What are the counts of each user type?
     '''
     # TODO: complete function
+    with open(city_file, newline='') as csvfile:
+        reader = csv.DictReader(csvfile)
+        user_types = []
+        for row in reader:
+            user_types.append(row['User Type'])
+
+    user_types_count = Counter(user_types)
+    subscribers = user_types_count.get("Subscriber")
+    customers = user_types_count.get("Customer")
+
+    return(subscribers,customers)
 
 
 def gender(city_file, time_period):
@@ -250,6 +282,17 @@ def gender(city_file, time_period):
     Question: What are the counts of gender?
     '''
     # TODO: complete function
+    with open(city_file, newline='') as csvfile:
+        reader = csv.DictReader(csvfile)
+        genders = []
+        for row in reader:
+            genders.append(row['Gender'])
+
+    gender_count = Counter(genders)
+    male = gender_count.get("Male")
+    female = gender_count.get("Female")
+
+    return(male,female)
 
 
 def birth_years(city_file, time_period):
@@ -258,9 +301,21 @@ def birth_years(city_file, time_period):
     and most popular birth years?
     '''
     # TODO: complete function
+    with open(city_file, newline='') as csvfile:
+        reader = csv.DictReader(csvfile)
+        years = []
+        for row in reader:
+            years.append(row['Birth Year'])
+
+    year_count = Counter(filter(None,years))
+    most_common_year = int(float(year_count.most_common(1)[0][0]))
+    oldest = int(float(min(filter(None,years))))
+    youngest = int(float(max(filter(None,years))))
+
+    return(most_common_year, oldest, youngest)
 
 
-def display_data():
+def display_data(city):
     '''Displays five lines of data if the user specifies that they would like to.
     After displaying five lines, ask the user if they would like to see five more,
     continuing asking until they say stop.
@@ -272,23 +327,52 @@ def display_data():
     '''
     display = input('\nWould you like to view individual trip data?'
                     'Type \'yes\' or \'no\'.\n')
-    # TODO: handle raw input and complete function
 
+    valid_input = ['yes','no']
 
-def statistics():
-    '''Calculates and prints out the descriptive statistics about a city and time period
+    while display not in valid_input:
+        print("I don't understand that.")
+        display = input('\nWould you like to view individual trip data?'
+                    'Type \'yes\' or \'no\'.\n')
+
+    start = 1
+    end = 6    
+    while display == 'yes':
+        with open(city, newline='') as csvfile:
+            reader = csv.reader(csvfile)
+            for row in itertools.islice(reader, start, end):
+                print(row)
+                start +=5
+                end +=5
+        display = input('\nWould you like to continue to view individual trip data?'
+                    'Type \'yes\' or \'no\'.\n')
+        while display not in valid_input:
+            print("I don't understand that.")
+            display = input('\nWould you like to continue to view individual trip data?'
+                    'Type \'yes\' or \'no\'.\n')
+
+'''
+Function: statistics()
+    Calculates and prints out the descriptive statistics about a city and time period
     specified by the user via raw input.
-
-    Args:
-        none.
-    Returns:
-        none.
-    '''
+Args:
+    none.
+Returns:
+    none.
+'''
+def statistics():
     # Filter by city (Chicago, New York, Washington)
     city = get_city()
 
     # Filter by time period (month, day, none)
     time_period = get_time_period()
+
+    if time_period == 'month':
+        month = get_month()
+
+    if time_period == 'day':
+        month = get_month()
+        day = get_day(month)
 
     print('Calculating the first statistic...')
 
@@ -297,7 +381,7 @@ def statistics():
         start_time = time.time()
         
         #TODO: call popular_month function and print the results
-        print(popular_month(city, time_period) + " is the most popular month.")
+        print(popular_month(city) + " is the most popular month.\n")
         print("That took %s seconds." % (time.time() - start_time))
         print("Calculating the next statistic...")
 
@@ -306,7 +390,7 @@ def statistics():
         start_time = time.time()
         
         # TODO: call popular_day function and print the results
-        print(popular_day(city, time_period) + " is the most popular day.")        
+        print(popular_day(city, time_period) + " is the most popular day.\n")        
         print("That took %s seconds." % (time.time() - start_time))
         print("Calculating the next statistic...")    
 
@@ -314,7 +398,7 @@ def statistics():
 
     # What is the most popular hour of day for start time?
     # TODO: call popular_hour function and print the results
-    print(popular_hour(city,time_period) + " is the most popular hour of the day.")
+    print(popular_hour(city,time_period) + " is the most popular hour of the day.\n")
     print("That took %s seconds." % (time.time() - start_time))
     print("Calculating the next statistic...")
     start_time = time.time()
@@ -322,7 +406,7 @@ def statistics():
     # What is the total trip duration and average trip duration?
     # TODO: call trip_duration function and print the results
     durations = trip_duration(city, time_period)
-    print("The total duration is {} seconds.\nThe average duration is {} seconds.".format(durations[0],durations[1]))
+    print("The total duration is {} seconds.\nThe average duration is {} seconds.\n".format(durations[0],durations[1]))
     print("That took %s seconds." % (time.time() - start_time))
     print("Calculating the next statistic...")
     start_time = time.time()
@@ -330,28 +414,31 @@ def statistics():
     # What is the most popular start station and most popular end station?
     # TODO: call popular_stations function and print the results
     stations = popular_stations(city, time_period)
-    print("The most popular start station is {}.\nThe most popular end station is {}".format(stations[0],stations[1]))
+    print("The most popular start station is {}.\nThe most popular end station is {}.\n".format(stations[0],stations[1]))
     print("That took %s seconds." % (time.time() - start_time))
     print("Calculating the next statistic...")
     start_time = time.time()
 
     # What is the most popular trip?
     # TODO: call popular_trip function and print the results
-
+    trip = popular_trip(city, time_period)
+    print("The most popular trip is {} to {}.\n".format(trip[0],trip[1]))
     print("That took %s seconds." % (time.time() - start_time))
     print("Calculating the next statistic...")
     start_time = time.time()
 
     # What are the counts of each user type?
     # TODO: call users function and print the results
-
+    types = users(city, time_period)
+    print("There are {} subscirbers and {} customers.\n".format(types[0],types[1]))
     print("That took %s seconds." % (time.time() - start_time))
     print("Calculating the next statistic...")
     start_time = time.time()
 
     # What are the counts of gender?
     # TODO: call gender function and print the results
-
+    genders = gender(city,time_period)
+    print("There are {} males and {} females.\n".format(genders[0],genders[1]))
     print("That took %s seconds." % (time.time() - start_time))
     print("Calculating the next statistic...")
     start_time = time.time()
@@ -359,11 +446,12 @@ def statistics():
     # What are the earliest (i.e. oldest user), most recent (i.e. youngest user), and
     # most popular birth years?
     # TODO: call birth_years function and print the results
-
+    years = birth_years(city,time_period)
+    print("The most common birth year is {}.\nThe oldest rider was born in the year {}.\nThe youngest rider was born in the year {}.\n".format(years[0],years[1],years[2]))
     print("That took %s seconds." % (time.time() - start_time))
 
     # Display five lines of data at a time if user specifies that they would like to
-    display_data()
+    display_data(city)
 
     # Restart?
     restart = input('\nWould you like to restart? Type \'yes\' or \'no\'.\n')
